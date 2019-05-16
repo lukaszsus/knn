@@ -4,7 +4,7 @@ import re
 import warnings
 
 from sklearn.model_selection import StratifiedKFold
-from sklearn import metrics
+from sklearn import metrics, preprocessing
 from sklearn.neighbors import KNeighborsClassifier
 from plotter import OUTCOME_PATH
 from utils import *
@@ -18,7 +18,7 @@ class Researcher:
     NUM_FOLDS_MIN = 2
     NUM_FOLDS_MAX = 9
     NUM_K_MIN = 1
-    NUM_K_MAX = 10
+    NUM_K_MAX = 20
     VOTING_METHODS = ["uniform", "distance", count_one_over_sqrt_order_dist]
     VOTING_METHODS_NAMES = ["uniform", "distance", "sqrt-order"]
     DISTANCE_MEHTODS = [Distance.MANHATTAN.value, Distance.EUCLIDEAN.value]
@@ -26,7 +26,7 @@ class Researcher:
     METRICS_COLUMN_LIST = ["dataset", "n-k", "voting", "distance", "n-folds",
                            "acc_mean", "prec_mean", "rec_mean", "f1_mean"]
 
-    def __init__(self):
+    def __init__(self, standarization=True):
         self._accuracies = None
         self._precisions = None
         self._recalls = None
@@ -36,6 +36,8 @@ class Researcher:
         self._metrics: pd.DataFrame = pd.DataFrame(columns=self.METRICS_COLUMN_LIST)
         self._outcomes_dir_name = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")
 
+        self._standarization = standarization
+        self._scaler = preprocessing.StandardScaler()
 
         # params for research
         self._loader = None
@@ -55,7 +57,7 @@ class Researcher:
             self._do_research_for_ks()
 
     def _do_research_for_ks(self):
-        for self._k in range(self.NUM_K_MIN, self.NUM_FOLDS_MAX + 1):
+        for self._k in range(self.NUM_K_MIN, self.NUM_K_MAX + 1):
             self._do_research_for_voting()
 
     def _do_research_for_voting(self):
@@ -69,6 +71,10 @@ class Researcher:
 
     def _do_research_for_folds(self):
         self._data, self._target = self._loader()
+
+        if self._standarization:
+            self._data = self._scaler.fit_transform(self._data)
+
         for self._n_folds in range(self.NUM_FOLDS_MIN, self.NUM_FOLDS_MAX + 1):
             self._do_research_for_n_samples()
 

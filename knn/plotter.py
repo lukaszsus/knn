@@ -72,7 +72,9 @@ def parse_distance_to_names(df):
 
 
 if __name__ == '__main__':
-    file_path = "../outcomes/2019-05-13-17-46/all.csv"
+    file_path = "../outcomes/2019-05-16-17-36/all.csv"
     df = pd.read_csv(file_path)
-    # plot_metrics_for_all_datasets_average_folds(df)
+    parse_distance_to_names(df)
+    df.to_csv(file_path)
+    plot_metrics_for_all_datasets_average_folds(df)
     plot_metrics_for_all_datasets_by_folds(df)
